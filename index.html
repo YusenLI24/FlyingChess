@@ -8,16 +8,16 @@
     body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
     .board {
       position: relative;
-      width: 1200px;
-      height: 1200px;
+      width: 800px;
+      height: 800px;
       margin: 30px auto;
       background: #fff;
       border: 2px solid #000;
     }
     .cell {
       position: absolute;
-      width: 120px;
-      height: 120px;
+      width: 80px;
+      height: 80px;
       border: 1px solid #ccc;
       display: flex;
       justify-content: center;
@@ -128,8 +128,8 @@
   path.forEach(([x, y], i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.style.left = `${x * 120}px`;
-    cell.style.top = `${y * 120}px`;
+    cell.style.left = `${x * 80}px`;
+    cell.style.top = `${y * 80}px`;
     cell.style.background = colors[i];
 
     const heart = document.createElement("div");
