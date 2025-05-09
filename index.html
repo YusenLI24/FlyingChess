@@ -8,7 +8,7 @@
     body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
     .board {
       position: relative;
-      width: 700px;
+      width: 600px;
       height: 700px;
       margin: 30px auto;
       background: #fff;
@@ -16,7 +16,7 @@
     }
     .cell {
       position: absolute;
-      width: 70px;
+      width: 60px;
       height: 70px;
       border: 1px solid #ccc;
       display: flex;
@@ -128,8 +128,8 @@
   path.forEach(([x, y], i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.style.left = `${x * 70}px`;
-    cell.style.top = `${y * 70}px`;
+    cell.style.left = `${x * 60}px`;
+    cell.style.top = `${y * 60}px`;
     cell.style.background = colors[i];
 
     const heart = document.createElement("div");
