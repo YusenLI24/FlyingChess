@@ -16,8 +16,8 @@
     }
     .cell {
       position: absolute;
-      width: 35px;
-      height: 35px;
+      width: 50px;
+      height: 50px;
       border: 1px solid #ccc;
       display: flex;
       justify-content: center;
@@ -91,15 +91,14 @@
   const popupText = document.getElementById("popupText");
 
   const path = [
-    [0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],[8, 0],[9, 0],    
-    [9, 1],[9, 2],[9, 3],[9, 4],[9, 5],[9, 6],[9, 7],[9, 8],[9, 9],
-    [8, 9],[7, 9],[6, 9],[5, 9],[4, 9],[3, 9],[2, 9],[1, 9],
-    [1, 8],[1, 7],[1, 6],[1, 5],[1, 4],[1, 3],[1, 2],
-    [2, 2],[3, 2],[4, 2],[5, 2],[6, 2],[7, 2],
-    [7, 3],[7, 4],[7, 5],[7, 6],[7, 7],
-    [6, 7],[5, 7],[4, 7],[3, 7],
-    [3, 6],[3, 5],[3, 4],
-    [4, 4],[5, 4],[5, 5]
+    [0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],   
+    [6, 1],[6, 2],[6, 3],[6, 4],[6, 5],[6, 6],
+    [5, 6],[4, 6],[3, 6],[2, 6],[1, 6],
+    [1, 5],[1, 4],[1, 3],[1, 2],
+    [2, 2],[3, 2],[4, 2],
+    [4, 3],[4, 4],
+	[3, 4]
+
   ];
 
   const colors = Array.from({ length: path.length }, (_, i) =>
@@ -107,14 +106,14 @@
   );
 
   const events = {
-    5: "前进 2 格",
-    10: "后退 1 格",
-    15: "跳过下一回合",
-    20: "暂停掷骰子一次",
-    25: "前进到起点",
-    30: "交换位置",
-    40: "继续前进 1 格",
-    50: "大冒险！"
+    3: "前进 2 格",
+    5: "后退 1 格",
+    11: "跳过下一回合",
+    14: "暂停掷骰子一次",
+    17: "前进到起点",
+    19: "交换位置",
+    23: "继续前进 1 格",
+    25: "大冒险！"
   };
 
   const players = [
@@ -128,8 +127,8 @@
   path.forEach(([x, y], i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.style.left = `${x * 35}px`;
-    cell.style.top = `${y * 35}px`;
+    cell.style.left = `${x * 50}px`;
+    cell.style.top = `${y * 50}px`;
     cell.style.background = colors[i];
 
     const heart = document.createElement("div");
@@ -156,8 +155,8 @@
   function renderTokens() {
     players.forEach(p => {
       const [x, y] = path[p.pos];
-      p.el.style.left = `${x * 35 + 9}px`;
-      p.el.style.top = `${y * 35 + 9}px`;
+      p.el.style.left = `${x * 50 + 9}px`;
+      p.el.style.top = `${y * 50 + 9}px`;
     });
   }
 
