@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>飞行棋小游戏</title>
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f8ff;
+    }
     .board {
       position: relative;
       width: 400px;
-      height: 550px;
-      margin: 30px auto;
+      height: 500px;
+      margin: 20px auto;
       background: #fff;
       border: 2px solid #000;
     }
@@ -45,11 +49,19 @@
       transition: all 0.4s ease;
       z-index: 10;
     }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
-    #status { margin-top: 15px; font-size: 18px; font-weight: bold; }
+    button {
+      padding: 12px 24px;
+      font-size: 20px;
+      margin-top: 20px;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 24px;
+      font-weight: bold;
+    }
     .popup {
       position: fixed;
-      top: 20%;
+      top: 25%;
       left: 50%;
       transform: translateX(-50%);
       background: white;
@@ -68,190 +80,205 @@
   </style>
 </head>
 <body>
+  <h2>飞行棋小游戏（李老师 & 小蛋糕）</h2>
+  <div class="board" id="board"></div>
+  <div id="status">当前回合：👴</div>
+  <button onclick="rollDice()">掷骰子</button>
 
-<h2>飞行棋小游戏（李老师&小蛋糕）</h2>
-<div class="board" id="board"></div>
-<div id="status">当前回合：👴</div>
-<button onclick="rollDice()">掷骰子</button>
+  <div id="popup" class="popup">
+    <p id="popupText"></p>
+    <button onclick="closePopup()">关闭</button>
+  </div>
 
-<div id="popup" class="popup">
-  <p id="popupText"></p>
-  <button onclick="closePopup()">关闭</button>
-</div>
+  <div id="winnerPopup" class="popup">
+    🎉 玩家 <span id="winnerPlayer"></span> 获胜！🎉
+  </div>
 
-<div id="winnerPopup" class="popup">
-  🎉 玩家 <span id="winnerPlayer"></span> 获胜！🎉
-</div>
+  <script>
+    const icons = ["👴", "🎂"];
+    const board = document.getElementById("board");
+    const status = document.getElementById("status");
+    const popup = document.getElementById("popup");
+    const popupText = document.getElementById("popupText");
 
-<script>
-  const icons = ["👴", "🎂"];
-  const board = document.getElementById("board");
-  const status = document.getElementById("status");
-  const popup = document.getElementById("popup");
-  const popupText = document.getElementById("popupText");
+    const path = [
+      [0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],
+      [7, 1],[7, 2],[7, 3],[7, 4],[7, 5],[7, 6],[7, 7],[7, 8],[7, 9],
+      [6, 9],[5, 9],[4, 9],[3, 9],[2, 9],[1, 9],
+      [1, 8],[1, 7],[1, 6],[1, 5],[1, 4],[1, 3],[1, 2],
+      [2, 2],[3, 2],[4, 2],[5, 2],
+      [5, 3],[5, 4],[5, 5],[5, 6],[5, 7],
+      [4, 7],[3, 7],
+      [3, 6],[3, 5],[3, 4]
+    ];
 
-  const path = [
-    [0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0], 
-    [7, 1],[7, 2],[7, 3],[7, 4],[7, 5],[7, 6],[7, 7],[7, 8],[7, 9],
-    [6, 9],[5, 9],[4, 9],[3, 9],[2, 9],[1, 9],
-    [1, 9],[1, 8],[1, 7],[1, 6],[1, 5],[1, 4],[1, 3],[1, 2],
-    [2, 2],[3, 2],[4, 2],[5, 2],
-    [5, 3],[5, 4],[5, 5],[5, 6],[5, 7],
-	[4, 7],[3, 7],
-	[3, 6],[3, 5],[3, 4],
+    const colors = Array.from({ length: path.length }, (_, i) =>
+      `hsl(${(i / path.length) * 360}, 80%, 60%)`
+    );
 
-  ];
+    const events = {
+      3: "前进 2 格",
+	  4: "前进 2 格",
+      5: "后退 1 格",
+	  8: "继续前进 1 格",
+      11: "跳过下一回合",
+      17: "跳过下一回合",
+      19: "交换位置",
+      23: "继续前进 1 格",
+      25: "大冒险！",
+	  30: "跳过下一回合",
+	  34: "跳过下一回合"
+    };
 
-  const colors = Array.from({ length: path.length }, (_, i) =>
-    `hsl(${(i / path.length) * 360}, 80%, 60%)`
-  );
+    const players = [
+      { pos: 0, el: null, icon: "👴", skip: false },
+      { pos: 0, el: null, icon: "🎂", skip: false }
+    ];
 
-  const events = {
-    3: "前进 2 格",
-    5: "后退 1 格",
-    11: "跳过下一回合",
-    14: "暂停掷骰子一次",
-    17: "前进到起点",
-    19: "交换位置",
-    23: "继续前进 1 格",
-    25: "大冒险！"
-  };
+    let currentPlayer = 0;
 
-  const players = [
-    { pos: 0, el: null, icon: "👴", skip: false },
-    { pos: 0, el: null, icon: "🎂", skip: false }
-  ];
+    path.forEach(([x, y], i) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.style.left = `${x * 50}px`;
+      cell.style.top = `${y * 50}px`;
+      cell.style.background = colors[i];
 
-  let skipRoll = [false, false];
-  let currentPlayer = 0;
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = "❤️";
+      cell.appendChild(heart);
 
-  path.forEach(([x, y], i) => {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.style.left = `${x * 50}px`;
-    cell.style.top = `${y * 50}px`;
-    cell.style.background = colors[i];
+      const label = document.createElement("div");
+      label.textContent = i;
+      label.style.zIndex = 1;
+      cell.appendChild(label);
 
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.textContent = "❤️";
-    cell.appendChild(heart);
-
-    const label = document.createElement("div");
-    label.textContent = i;
-    label.style.zIndex = 1;
-    cell.appendChild(label);
-
-    board.appendChild(cell);
-  });
-
-  players.forEach((p) => {
-    const el = document.createElement("div");
-    el.className = "token";
-    el.textContent = p.icon;
-    board.appendChild(el);
-    p.el = el;
-  });
-
-  function renderTokens() {
-    players.forEach(p => {
-      const [x, y] = path[p.pos];
-      p.el.style.left = `${x * 50 + 9}px`;
-      p.el.style.top = `${y * 50 + 9}px`;
+      board.appendChild(cell);
     });
-  }
 
-  function showPopup(message) {
-    popupText.textContent = message;
-    popup.style.display = "block";
-  }
-
-  function closePopup() {
-    popup.style.display = "none";
-  }
-
-  function showWinner(playerIndex) {
-    const winner = document.getElementById("winnerPlayer");
-    const winPopup = document.getElementById("winnerPopup");
-    winner.textContent = icons[playerIndex];
-    winPopup.style.display = "block";
-    winPopup.animate([
-      { opacity: 0.1 },
-      { opacity: 1 },
-      { opacity: 0.1 },
-      { opacity: 1 }
-    ], {
-      duration: 1000,
-      iterations: 3
+    players.forEach((p) => {
+      const el = document.createElement("div");
+      el.className = "token";
+      el.textContent = p.icon;
+      board.appendChild(el);
+      p.el = el;
     });
-  }
 
-  function rollDice() {
-    if (skipRoll[currentPlayer]) {
-      showPopup(`玩家 ${icons[currentPlayer]} 因事件暂停一次掷骰子`);
-      skipRoll[currentPlayer] = false;
-      currentPlayer = 1 - currentPlayer;
-      status.textContent = `当前回合：${icons[currentPlayer]}`;
-      return;
+    function renderTokens() {
+      players.forEach(p => {
+        const [x, y] = path[p.pos];
+        p.el.style.left = `${x * 50 + 9}px`;
+        p.el.style.top = `${y * 50 + 9}px`;
+      });
     }
 
-    const player = players[currentPlayer];
-    if (player.skip) {
-      showPopup(`玩家 ${icons[currentPlayer]} 跳过这回合`);
-      player.skip = false;
-      currentPlayer = 1 - currentPlayer;
-      status.textContent = `当前回合：${icons[currentPlayer]}`;
-      return;
+    function showPopup(message) {
+      popupText.textContent = message;
+      popup.style.display = "block";
     }
 
-    const steps = Math.floor(Math.random() * 6) + 1;
-    alert(`玩家 ${icons[currentPlayer]} 掷出了：${steps}`);
+    function closePopup() {
+      popup.style.display = "none";
+    }
 
-    let newPos = Math.min(player.pos + steps, path.length - 1);
-    let step = player.pos;
-    const interval = setInterval(() => {
-      if (step < newPos) {
-        step++;
-        player.pos = step;
-        renderTokens();
-      } else {
-        clearInterval(interval);
-        const event = events[player.pos];
-        if (event) {
-          showPopup(`格子 ${player.pos} 事件：${event}`);
-          if (event.includes("前进")) {
-            const plus = parseInt(event.match(/\d+/)[0]);
-            player.pos = Math.min(player.pos + plus, path.length - 1);
-          } else if (event.includes("后退")) {
-            const minus = parseInt(event.match(/\d+/)[0]);
-            player.pos = Math.max(player.pos - minus, 0);
-          } else if (event.includes("跳过")) {
-            player.skip = true;
-          } else if (event.includes("暂停")) {
-            skipRoll[currentPlayer] = true;
-          } else if (event.includes("起点")) {
-            player.pos = 0;
-          } else if (event.includes("交换")) {
-            const other = 1 - currentPlayer;
-            [player.pos, players[other].pos] = [players[other].pos, player.pos];
-          }
-          renderTokens();
-        }
+    function showWinner(playerIndex) {
+      const winner = document.getElementById("winnerPlayer");
+      const winPopup = document.getElementById("winnerPopup");
+      winner.textContent = icons[playerIndex];
+      winPopup.style.display = "block";
+      winPopup.animate([
+        { opacity: 0.1 },
+        { opacity: 1 },
+        { opacity: 0.1 },
+        { opacity: 1 }
+      ], {
+        duration: 1000,
+        iterations: 3
+      });
+    }
 
-        if (player.pos === path.length - 1) {
-          status.textContent = `🎉 ${icons[currentPlayer]} 获胜！`;
-          document.querySelector("button").disabled = true;
-          showWinner(currentPlayer);
-        } else {
-          currentPlayer = 1 - currentPlayer;
-          status.textContent = `当前回合：${icons[currentPlayer]}`;
-        }
+    function rollDice() {
+      const player = players[currentPlayer];
+      if (player.skip) {
+        showPopup(`玩家 ${icons[currentPlayer]} 跳过这回合`);
+        player.skip = false;
+        currentPlayer = 1 - currentPlayer;
+        status.textContent = `当前回合：${icons[currentPlayer]}`;
+        return;
       }
-    }, 400);
-  }
 
-  renderTokens();
-</script>
+      const steps = Math.floor(Math.random() * 6) + 1;
+      showPopup(`玩家 ${icons[currentPlayer]} 掷出了：${steps}`);
 
+      popup.querySelector("button").onclick = () => {
+        closePopup();
+        movePlayer(steps);
+      };
+    }
+
+    function movePlayer(steps) {
+      const player = players[currentPlayer];
+      let newPos = Math.min(player.pos + steps, path.length - 1);
+      let step = player.pos;
+
+      const interval = setInterval(() => {
+        if (step < newPos) {
+          step++;
+          player.pos = step;
+          renderTokens();
+        } else {
+          clearInterval(interval);
+
+          const event = events[player.pos];
+          if (event) {
+            showPopup(`格子 ${player.pos} 事件：${event}`);
+            popup.querySelector("button").onclick = () => {
+              closePopup();
+
+              if (event.includes("前进")) {
+                const plus = parseInt(event.match(/\d+/)[0]);
+                player.pos = Math.min(player.pos + plus, path.length - 1);
+              } else if (event.includes("后退")) {
+                const minus = parseInt(event.match(/\d+/)[0]);
+                player.pos = Math.max(player.pos - minus, 0);
+              } else if (event.includes("跳过")) {
+                player.skip = true;
+              } else if (event.includes("起点")) {
+                player.pos = 0;
+              } else if (event.includes("交换")) {
+                const other = 1 - currentPlayer;
+                [player.pos, players[other].pos] = [players[other].pos, player.pos];
+              }
+
+              renderTokens();
+
+              if (player.pos === path.length - 1) {
+                status.textContent = `🎉 ${icons[currentPlayer]} 获胜！`;
+                document.querySelector("button").disabled = true;
+                showWinner(currentPlayer);
+              } else {
+                currentPlayer = 1 - currentPlayer;
+                status.textContent = `当前回合：${icons[currentPlayer]}`;
+                // ❌ 不自动掷骰子
+              }
+            };
+          } else {
+            if (player.pos === path.length - 1) {
+              status.textContent = `🎉 ${icons[currentPlayer]} 获胜！`;
+              document.querySelector("button").disabled = true;
+              showWinner(currentPlayer);
+            } else {
+              currentPlayer = 1 - currentPlayer;
+              status.textContent = `当前回合：${icons[currentPlayer]}`;
+              // 玩家需手动点击掷骰子
+            }
+          }
+        }
+      }, 400);
+    }
+
+    renderTokens();
+  </script>
 </body>
 </html>
