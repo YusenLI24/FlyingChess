@@ -8,16 +8,16 @@
     body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
     .board {
       position: relative;
-      width: 500px;
-      height: 500px;
+      width: 1200px;
+      height: 1200px;
       margin: 30px auto;
       background: #fff;
       border: 2px solid #000;
     }
     .cell {
       position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 120px;
+      height: 120px;
       border: 1px solid #ccc;
       display: flex;
       justify-content: center;
@@ -128,8 +128,8 @@
   path.forEach(([x, y], i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.style.left = `${x * 50}px`;
-    cell.style.top = `${y * 50}px`;
+    cell.style.left = `${x * 120}px`;
+    cell.style.top = `${y * 120}px`;
     cell.style.background = colors[i];
 
     const heart = document.createElement("div");
@@ -156,8 +156,8 @@
   function renderTokens() {
     players.forEach(p => {
       const [x, y] = path[p.pos];
-      p.el.style.left = `${x * 50 + 9}px`;
-      p.el.style.top = `${y * 50 + 9}px`;
+      p.el.style.left = `${x * 80 + 9}px`;
+      p.el.style.top = `${y * 80 + 9}px`;
     });
   }
 
