@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>飞行棋小游戏</title>
   <style>
+   /* 页面基础样式 */
     body {
       font-family: sans-serif;
       text-align: center;
       background: #f0f8ff;
     }
+
+	/* 棋盘容器样式 */
     .board {
       position: relative;
       width: 400px;
@@ -18,6 +21,8 @@
       background: #fff;
       border: 2px solid #000;
     }
+
+	/* 每个格子的样式 */
     .cell {
       position: absolute;
       width: 50px;
@@ -30,6 +35,8 @@
       font-weight: bold;
       color: white;
     }
+
+	/* 每个格子上的心形图案 */
     .cell .heart {
       position: absolute;
       top: 50%;
@@ -39,6 +46,8 @@
       font-size: 32px;
       pointer-events: none;
     }
+
+	/* 棋子样式 */
     .token {
       width: 32px;
       height: 32px;
@@ -49,16 +58,28 @@
       transition: all 0.4s ease;
       z-index: 10;
     }
+
+	/* 掷骰按钮样式 */
     button {
       padding: 12px 24px;
       font-size: 20px;
       margin-top: 20px;
     }
+
+	/* 当前状态栏样式 */
     #status {
       margin-top: 15px;
       font-size: 24px;
       font-weight: bold;
     }
+
+	/* 当前玩家图标加大样式 */
+    #status .player-icon {
+      font-size: 30px;
+      margin-left: 10px;
+    }
+
+	/* 弹窗样式 */
     .popup {
       position: fixed;
       top: 25%;
@@ -70,6 +91,8 @@
       display: none;
       z-index: 100;
     }
+
+	/* 胜利弹窗样式 */
     #winnerPopup {
       font-size: 22px;
       font-weight: bold;
@@ -80,28 +103,37 @@
   </style>
 </head>
 <body>
+
+	<!-- 标题与游戏状态栏 -->
   <h2>飞行棋小游戏（李老师 & 小蛋糕）</h2>
   <div class="board" id="board"></div>
-  <div id="status">当前回合：👴</div>
+  <div id="status">当前回合：<span class="player-icon">👴</span></div>
   <button onclick="rollDice()">掷骰子</button>
 
+  <!-- 弹窗结构 -->
   <div id="popup" class="popup">
     <p id="popupText"></p>
-    <button onclick="closePopup()">关闭</button>
+    <button id="popupCloseBtn" onclick="closePopup()">关闭</button>
   </div>
 
+  <!-- 胜利提示弹窗 -->
   <div id="winnerPopup" class="popup">
     🎉 玩家 <span id="winnerPlayer"></span> 获胜！🎉
   </div>
 
   <script>
-    const icons = ["👴", "🎂"];
-    const board = document.getElementById("board");
+    // 玩家图标
+	const icons = ["👴", "🎂"];
+    
+	// DOM 元素引用
+	const board = document.getElementById("board");
     const status = document.getElementById("status");
     const popup = document.getElementById("popup");
     const popupText = document.getElementById("popupText");
+    const popupCloseBtn = document.getElementById("popupCloseBtn");
 
-    const path = [
+    // 棋盘路径格子坐标（从左上到右下绕一圈）
+	const path = [
       [0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],
       [7, 1],[7, 2],[7, 3],[7, 4],[7, 5],[7, 6],[7, 7],[7, 8],[7, 9],
       [6, 9],[5, 9],[4, 9],[3, 9],[2, 9],[1, 9],
@@ -112,10 +144,12 @@
       [3, 6],[3, 5],[3, 4]
     ];
 
-    const colors = Array.from({ length: path.length }, (_, i) =>
+    // 根据格子数量生成彩色背景
+	const colors = Array.from({ length: path.length }, (_, i) =>
       `hsl(${(i / path.length) * 360}, 80%, 60%)`
     );
 
+     // 特殊事件定义（根据格子编号）
     const events = {
       3: "前进 2 格",
 	  4: "前进 2 格",
@@ -130,14 +164,17 @@
 	  34: "跳过下一回合"
     };
 
-    const players = [
+    // 两位玩家状态初始化
+	const players = [
       { pos: 0, el: null, icon: "👴", skip: false },
       { pos: 0, el: null, icon: "🎂", skip: false }
     ];
 
-    let currentPlayer = 0;
+    // 当前玩家编号（0 或 1）
+	let currentPlayer = 0;
 
-    path.forEach(([x, y], i) => {
+    // 创建棋盘格子 DOM 元素
+	path.forEach(([x, y], i) => {
       const cell = document.createElement("div");
       cell.className = "cell";
       cell.style.left = `${x * 50}px`;
@@ -157,7 +194,8 @@
       board.appendChild(cell);
     });
 
-    players.forEach((p) => {
+    // 创建玩家棋子元素
+	players.forEach(p => {
       const el = document.createElement("div");
       el.className = "token";
       el.textContent = p.icon;
@@ -165,7 +203,8 @@
       p.el = el;
     });
 
-    function renderTokens() {
+    // 渲染棋子在正确位置
+	function renderTokens() {
       players.forEach(p => {
         const [x, y] = path[p.pos];
         p.el.style.left = `${x * 50 + 9}px`;
@@ -173,51 +212,59 @@
       });
     }
 
-    function showPopup(message) {
+    // 显示弹窗，支持是否自动关闭
+	function showPopup(message, autoClose = false) {
       popupText.textContent = message;
       popup.style.display = "block";
+      popupCloseBtn.style.display = autoClose ? "none" : "inline-block";
     }
 
-    function closePopup() {
+    // 关闭弹窗
+	function closePopup() {
       popup.style.display = "none";
     }
 
-    function showWinner(playerIndex) {
+    // 显示胜利弹窗
+	function showWinner(playerIndex) {
       const winner = document.getElementById("winnerPlayer");
       const winPopup = document.getElementById("winnerPopup");
       winner.textContent = icons[playerIndex];
       winPopup.style.display = "block";
-      winPopup.animate([
-        { opacity: 0.1 },
-        { opacity: 1 },
-        { opacity: 0.1 },
-        { opacity: 1 }
-      ], {
+      winPopup.animate([{ opacity: 0.1 }, { opacity: 1 }, { opacity: 0.1 }, { opacity: 1 }], {
         duration: 1000,
         iterations: 3
       });
     }
 
-    function rollDice() {
+    // 掷骰子逻辑
+	function rollDice() {
       const player = players[currentPlayer];
-      if (player.skip) {
+
+      // 检查是否需跳过本轮
+	  if (player.skip) {
         showPopup(`玩家 ${icons[currentPlayer]} 跳过这回合`);
-        player.skip = false;
-        currentPlayer = 1 - currentPlayer;
-        status.textContent = `当前回合：${icons[currentPlayer]}`;
+        popupCloseBtn.onclick = () => {
+          closePopup();
+          player.skip = false;
+          currentPlayer = 1 - currentPlayer;
+          status.innerHTML = `当前回合：<span class="player-icon">${icons[currentPlayer]}</span>`;
+        };
         return;
       }
 
-      const steps = Math.floor(Math.random() * 6) + 1;
-      showPopup(`玩家 ${icons[currentPlayer]} 掷出了：${steps}`);
+      // 正常掷骰子（1~6）
+	  const steps = Math.floor(Math.random() * 6) + 1;
+      showPopup(`玩家 ${icons[currentPlayer]} 掷出了：${steps}`, true);
 
-      popup.querySelector("button").onclick = () => {
+      // 自动关闭提示后开始移动
+	  setTimeout(() => {
         closePopup();
         movePlayer(steps);
-      };
+      }, 1000);
     }
 
-    function movePlayer(steps) {
+    // 移动玩家棋子并触发事件
+	function movePlayer(steps) {
       const player = players[currentPlayer];
       let newPos = Math.min(player.pos + steps, path.length - 1);
       let step = player.pos;
@@ -232,11 +279,13 @@
 
           const event = events[player.pos];
           if (event) {
-            showPopup(`格子 ${player.pos} 事件：${event}`);
-            popup.querySelector("button").onclick = () => {
+            // 显示事件弹窗
+			showPopup(`格子 ${player.pos} 事件：${event}`);
+            popupCloseBtn.onclick = () => {
               closePopup();
 
-              if (event.includes("前进")) {
+              // 执行事件效果
+			  if (event.includes("前进")) {
                 const plus = parseInt(event.match(/\d+/)[0]);
                 player.pos = Math.min(player.pos + plus, path.length - 1);
               } else if (event.includes("后退")) {
@@ -253,32 +302,33 @@
 
               renderTokens();
 
-              if (player.pos === path.length - 1) {
-                status.textContent = `🎉 ${icons[currentPlayer]} 获胜！`;
+              // 胜利判断
+			  if (player.pos === path.length - 1) {
+                status.innerHTML = `🎉 <span class="player-icon">${icons[currentPlayer]}</span> 获胜！`;
                 document.querySelector("button").disabled = true;
                 showWinner(currentPlayer);
               } else {
                 currentPlayer = 1 - currentPlayer;
-                status.textContent = `当前回合：${icons[currentPlayer]}`;
-                // ❌ 不自动掷骰子
+                status.innerHTML = `当前回合：<span class="player-icon">${icons[currentPlayer]}</span>`;
               }
             };
           } else {
-            if (player.pos === path.length - 1) {
-              status.textContent = `🎉 ${icons[currentPlayer]} 获胜！`;
+            // 没有事件：正常结束本轮
+			if (player.pos === path.length - 1) {
+              status.innerHTML = `🎉 <span class="player-icon">${icons[currentPlayer]}</span> 获胜！`;
               document.querySelector("button").disabled = true;
               showWinner(currentPlayer);
             } else {
               currentPlayer = 1 - currentPlayer;
-              status.textContent = `当前回合：${icons[currentPlayer]}`;
-              // 玩家需手动点击掷骰子
+              status.innerHTML = `当前回合：<span class="player-icon">${icons[currentPlayer]}</span>`;
             }
           }
         }
       }, 400);
     }
 
-    renderTokens();
+    // 初始化棋子位置
+	renderTokens();
   </script>
 </body>
 </html>
