@@ -48,6 +48,17 @@
       pointer-events: none;
     }
     
+	/* 最后一个格子上的旗子闪烁 */
+	.blink-flag {
+	  animation: blink 1s infinite;
+	}
+
+	@keyframes blink {
+	  0%, 100% { opacity: 1; }
+	  50% { opacity: 0.2; }
+	}
+
+
 	/* 棋子样式 */
 	.token {
       width: 32px;
@@ -143,7 +154,7 @@
       </div>
       <div style="width: 2px; background: #900; margin: 0 10px; height: auto;"></div>
       <div style="flex: 1; min-width: 140px;">
-        <div class="record-title">🎂 玩家事件记录：</div>
+        <div class="record-title">🍰 玩家事件记录：</div>
         <div id="eventLog1" style="font-size: 14px; line-height: 1.5;"></div>
       </div>
     </div>
@@ -152,7 +163,7 @@
 
 <script>
   // 玩家图标
-  const icons = ["👴", "🎂"];
+  const icons = ["👴", "🍰"];
 
   // DOM 元素引用
   const board = document.getElementById("board");
@@ -170,7 +181,7 @@
       [2, 2],[3, 2],[4, 2],[5, 2],
       [5, 3],[5, 4],[5, 5],[5, 6],[5, 7],
       [4, 7],[3, 7],
-      [3, 6],[3, 5],[3, 4]
+      [3, 6],[3, 5],[3, 4],[4, 4]
     ];
 
     // 根据格子数量生成彩色背景
@@ -205,7 +216,7 @@
   // 两位玩家状态初始化
   const players = [
     { pos: 0, el: null, icon: "👴", skip: false, events: [] },
-    { pos: 0, el: null, icon: "🎂", skip: false, events: [] }
+    { pos: 0, el: null, icon: "🍰", skip: false, events: [] }
   ];
 
   // 当前玩家编号（0 或 1）
@@ -218,14 +229,33 @@
     cell.style.left = `${x * 50}px`;
     cell.style.top = `${y * 50}px`;
     cell.style.background = colors[i];
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.textContent = "❤️";
-    cell.appendChild(heart);
+
+
     const label = document.createElement("div");
     label.textContent = i;
     label.style.zIndex = 1;
     cell.appendChild(label);
+
+	if (i === path.length - 1) {
+	  // 最后一个格子：添加闪烁旗子
+      const flag = document.createElement("div");
+      flag.textContent = "🏁";
+      flag.className = "blink-flag";
+      flag.style.fontSize = "40px";
+      flag.style.position = "absolute";
+      flag.style.top = "50%";
+      flag.style.left = "50%";
+      flag.style.transform = "translate(-50%, -50%)";
+      flag.style.pointerEvents = "none";
+      cell.appendChild(flag);
+	} 
+	else {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = "❤️";
+      cell.appendChild(heart);
+	}
+
     board.appendChild(cell);
   });
 
