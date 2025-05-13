@@ -120,6 +120,19 @@
   <!-- 胜利提示弹窗 -->
   <div id="winnerPopup" class="popup">
     🎉 玩家 <span id="winnerPlayer"></span> 获胜！🎉
+    <div style="display: flex; justify-content: center; margin-top: 15px; text-align: left; gap: 40px;">
+      <div style="flex: 1;">
+        <strong>👴 玩家事件记录：</strong>
+        <div id="eventLog0"></div>
+      </div>
+
+	  <div style="width: 2px; background: #900; margin: 0 10px;"></div> <!-- 中间竖线 -->
+
+      <div style="flex: 1;">
+        <strong>🎂 玩家事件记录：</strong>
+        <div id="eventLog1"></div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -176,8 +189,8 @@
 
   // 两位玩家状态初始化
   const players = [
-    { pos: 0, el: null, icon: "👴", skip: false },
-    { pos: 0, el: null, icon: "🎂", skip: false }
+    { pos: 0, el: null, icon: "👴", skip: false, events: [] },
+    { pos: 0, el: null, icon: "🎂", skip: false, events: [] }
   ];
 
   // 当前玩家编号（0 或 1）
@@ -235,8 +248,18 @@
   function showWinner(playerIndex) {
     const winner = document.getElementById("winnerPlayer");
     const winPopup = document.getElementById("winnerPopup");
+	const eventLog = document.getElementById("eventLog");
+
     winner.textContent = icons[playerIndex];
-    winPopup.style.display = "block";
+
+	// 渲染两个玩家事件记录
+    players.forEach((p, i) => {
+      const logEl = document.getElementById("eventLog" + i);
+      const logs = p.events.map((e, idx) => `${idx + 1}. ${e}`).join("<br>");
+      logEl.innerHTML = logs || "无事件触发";
+    });
+
+	winPopup.style.display = "block";
     winPopup.animate([{ opacity: 0.1 }, { opacity: 1 }], {
       duration: 1000,
       iterations: 3
@@ -287,6 +310,7 @@
         if (event) {
 		  // 显示事件弹窗
           showPopup(`格子 ${player.pos} 事件：${event}`);
+		  players[currentPlayer].events.push(`格子 ${player.pos}: ${event}`);
           popupCloseBtn.onclick = () => {
             closePopup();
             
