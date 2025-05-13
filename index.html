@@ -120,20 +120,27 @@
   <!-- 胜利提示弹窗 -->
   <div id="winnerPopup" class="popup">
     🎉 玩家 <span id="winnerPlayer"></span> 获胜！🎉
-    <div style="display: flex; justify-content: center; margin-top: 15px; text-align: left; gap: 40px;">
-      <div style="flex: 1;">
+    <div style="
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 15px;
+      text-align: left;
+      gap: 20px;
+    ">
+      <div style="flex: 1; min-width: 140px;">
         <strong>👴 玩家事件记录：</strong>
         <div id="eventLog0"></div>
       </div>
-
-	  <div style="width: 2px; background: #900; margin: 0 10px;"></div> <!-- 中间竖线 -->
-
-      <div style="flex: 1;">
+      <div style="width: 2px; background: #900; margin: 0 10px; height: auto;"></div>
+      <div style="flex: 1; min-width: 140px;">
         <strong>🎂 玩家事件记录：</strong>
         <div id="eventLog1"></div>
       </div>
     </div>
   </div>
+
 
 <script>
   // 玩家图标
@@ -263,7 +270,7 @@
         !excludeKeywords.some(keyword => e.includes(keyword))
       );
       const logs = filtered.map((e, idx) => `${idx + 1}. ${e}`).join("<br>");
-      logEl.innerHTML = logs || "无记录（全为系统类事件）";
+      logEl.innerHTML = logs || "无记录";
     });
 
 	winPopup.style.display = "block";
