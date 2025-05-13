@@ -252,11 +252,18 @@
 
     winner.textContent = icons[playerIndex];
 
+	// 关键词过滤列表
+	const excludeKeywords = ["前进", "后退", "跳过", "暂停", "起点", "终点", "交换", "随机", "再掷"];
+
+
 	// 渲染两个玩家事件记录
     players.forEach((p, i) => {
       const logEl = document.getElementById("eventLog" + i);
-      const logs = p.events.map((e, idx) => `${idx + 1}. ${e}`).join("<br>");
-      logEl.innerHTML = logs || "无事件触发";
+      const filtered = p.events.filter(e =>
+        !excludeKeywords.some(keyword => e.includes(keyword))
+      );
+      const logs = filtered.map((e, idx) => `${idx + 1}. ${e}`).join("<br>");
+      logEl.innerHTML = logs || "无记录（全为系统类事件）";
     });
 
 	winPopup.style.display = "block";
@@ -309,8 +316,8 @@
         const event = events[player.pos];
         if (event) {
 		  // 显示事件弹窗
-          showPopup(`格子 ${player.pos} 事件：${event}`);
-		  players[currentPlayer].events.push(`格子 ${player.pos}: ${event}`);
+          showPopup(`${event}`);
+		  players[currentPlayer].events.push(`${event}`);
           popupCloseBtn.onclick = () => {
             closePopup();
             
