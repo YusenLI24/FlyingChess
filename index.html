@@ -101,6 +101,14 @@
       border: 3px solid gold;
       padding: 20px 40px;
     }
+	/* 单独减小事件记录的文字 */
+	#winnerPopup .record-title,
+	#winnerPopup div[id^="eventLog"] {
+	  font-size: 14px;
+	  line-height: 1.5;
+	  margin-top: 6px;
+	}
+
   </style>
 </head>
 <body>
@@ -130,13 +138,13 @@
       gap: 20px;
     ">
       <div style="flex: 1; min-width: 140px;">
-        <strong>👴 玩家事件记录：</strong>
-        <div id="eventLog0"></div>
+        <div class="record-title">👴 玩家事件记录：</div>
+		<div id="eventLog0" style="font-size: 14px; line-height: 1.5;"></div>
       </div>
       <div style="width: 2px; background: #900; margin: 0 10px; height: auto;"></div>
       <div style="flex: 1; min-width: 140px;">
-        <strong>🎂 玩家事件记录：</strong>
-        <div id="eventLog1"></div>
+        <div class="record-title">🎂 玩家事件记录：</div>
+        <div id="eventLog1" style="font-size: 14px; line-height: 1.5;"></div>
       </div>
     </div>
   </div>
